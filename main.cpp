@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include "user.h"
-int mn() {
-	printf("Hello, World!\n");
-	return 0;
+#include "word.h"
+#include "login.h"
+int main()
+{
+	login::get_instance()->login_into_system();
 }
