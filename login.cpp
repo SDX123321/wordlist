@@ -43,99 +43,112 @@ std::string login::login_into_system() {
 }
 
 std::string login::handle_login(HANDLE hConsole) {
-        const int MAX_ATTEMPTS = 5;
-        int attempts = 0;
-        std::string account, password;
-        DWORD mode;
-        GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &mode);
+    const int MAX_ATTEMPTS = 5;
+    int attempts = 0;
+    std::string account, password;
+    DWORD mode;
+    GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &mode);
 
-        while (attempts < MAX_ATTEMPTS) {
-            // 清空输入缓冲区
-            //std::cin.clear();
-            //std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-            // 获取账号
-            SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
-            std::cout << "请输入账号: ";
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            std::getline(std::cin, account);
+    // 清空输入缓冲区
+    //std::cin.clear();
+    //std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-            // 获取密码
-            SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
-            std::cout << "请输入密码: ";
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
-            std::cout << "(密码不会显示在屏幕上)\n";
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    // 获取账号
 
-            // 密码输入（带星号显示）
-            password.clear();
-            SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode & (~ENABLE_ECHO_INPUT));
-
-            char ch;
-            while ((ch = _getch()) != '\r') {
-                if (ch == '\b') {
-                    if (!password.empty()) {
-                        password.pop_back();
-                        std::cout << "\b \b";
-                    }
-                }
-                else if (ch >= 32 && ch <= 126) {
-                    password.push_back(ch);
-                    std::cout << '*';
-                }
-            }
-            std::cout << std::endl;
-            SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode);
-
-            if (user::get_instance()->check_password(account, password)) {
-                SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
-                std::cout << "登录成功！欢迎回来，" << account << "\n";
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-
-                user::get_instance()->user_name = account;
-                system("cls");
-                std::cout << "欢迎你， " << user::get_instance()->user_name << std::endl;
-                // 签到系统
-                handle_checkin(account, hConsole);
-
-                return account;
-            }
-
-            attempts++;
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
-            if (attempts == 3) {
-                std::cout << "已失败三次，还剩" << MAX_ATTEMPTS - attempts << "次机会\n";
-                std::this_thread::sleep_for(std::chrono::seconds(5));
-            }
-            else if (attempts == MAX_ATTEMPTS) {
-                std::cout << "登录尝试次数过多，程序将退出\n";
-                std::this_thread::sleep_for(std::chrono::seconds(3));
-                exit(-1);
-            }
-            else {
-                std::cout << "账号或密码错误，请重试\n";
-            }
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+    std::cout << "请输入账号:\n ";
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    std::getline(std::cin, account);
+    int retry = 0;
+    do
+    {
+        if (!user::get_instance()->check_account(account))
+        {
+            cout << "[输入校验]账号不存在\n";
+            retry++;
         }
-        return "";
+        if (retry == 3) cout << "您已失败三次，失败五次后将强制退出" << endl;
+        if (retry == 5)
+        {
+            cout << "您已失败五次，强制退出\n";
+            exit(-1);
+        }
+    } while (!user::get_instance()->check_account(account));
+    // 获取密码
+    SetConsoleTextAttribute(hConsole, 0x0002);
+    std::cout << "请输入密码: ";
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
+    std::cout << "(密码不会显示在屏幕上)\n";
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    retry = 0;
+    do {
+        // 密码输入（带星号显示）
+        password.clear();
+        SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode & (~ENABLE_ECHO_INPUT));
+
+        char ch;
+        while ((ch = _getch()) != '\r') {
+            if (ch == '\b') {
+                if (!password.empty()) {
+                    password.pop_back();
+                    std::cout << "\b \b";
+                }
+            }
+            else if (ch >= 32 && ch <= 126) {
+                password.push_back(ch);
+                std::cout << '*';
+            }
+        }
+        std::cout << std::endl;
+        SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode);
+        if (!user::get_instance()->check_password(account, password))
+        {
+            cout << "[输入校验]密码错误\n";
+            retry++;
+        }
+        if (retry == 3) cout << "您已失败三次，失败五次后将强制退出" << endl;
+        if (retry == 5)
+        {
+            cout << "您已失败五次，强制退出\n";
+            exit(-1);
+        }
+    } while (!user::get_instance()->check_password(account, password));
+    if (user::get_instance()->check_password(account, password)) {
+        SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+        std::cout << "登录成功！欢迎回来，" << account << "\n";
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(800));
+
+        user::get_instance()->user_name = account;
+        system("cls");
+        std::cout << "欢迎你， " << user::get_instance()->user_name << std::endl;
+        // 签到系统
+        handle_checkin(account, hConsole);
+
+        return account;
     }
+
+}
+    
 
 std::string login::handle_register(HANDLE hConsole) {
         current new_user;
         const int MAX_ATTEMPTS = 5;
-        int attempts = 0;
+        int retry = 0;
 
         // 注册账号
         do {
-            if (attempts > 0) {
+            
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
                 std::cout << "请重新输入\n";
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            }
+            
 
             std::cout << "请输入账号 (4-20位字母、数字或下划线): ";
             std::cin >> new_user.name;
-            attempts++;
+            
 
             if (!user::get_instance()->check_length(new_user.name)) {
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
@@ -148,21 +161,22 @@ std::string login::handle_register(HANDLE hConsole) {
                 std::cout << "[输入校验]账号已存在\n";
                 continue;
             }
+            if (user::get_instance()->check_account(new_user.name) ||!user::get_instance()->check_length(new_user.name)) retry++;
 
-            if (attempts >= MAX_ATTEMPTS) {
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
-                std::cout << "[输入校验]注册尝试次数过多，请稍后再试\n";
-                std::this_thread::sleep_for(std::chrono::seconds(3));
+            if (retry == 3) cout << "您已失败三次，失败五次后将强制退出" << endl;
+            if (retry == 5)
+            {
+                cout << "您已失败五次，强制退出\n";
                 exit(-1);
             }
         } while (user::get_instance()->check_account(new_user.name) ||
             !user::get_instance()->check_length(new_user.name));
 
         // 注册密码
-        attempts = 0;
-        do {
+        retry = 0;
+        
             SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
-            std::cout << "请输入密码 (4-20位字母、数字或下划线): ";
+            std::cout << "请输入密码 (4-20位，字母、数字或下划线): ";
             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
@@ -174,6 +188,8 @@ std::string login::handle_register(HANDLE hConsole) {
             SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode & (~ENABLE_ECHO_INPUT));
 
             char ch;
+    do
+    {
             while ((ch = _getch()) != '\r') {
                 if (ch == '\b') {
                     if (!new_user.password.empty()) {
@@ -188,20 +204,21 @@ std::string login::handle_register(HANDLE hConsole) {
             }
             std::cout << std::endl;
             SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode);
-            attempts++;
+            retry++;
 
             if (!user::get_instance()->check_length(new_user.password)) {
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
                 std::cout << "密码格式不正确\n";
+                retry++;
                 continue;
             }
-
-            if (attempts >= MAX_ATTEMPTS) {
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
-                std::cout << "注册尝试次数过多，请稍后再试\n";
-                std::this_thread::sleep_for(std::chrono::seconds(3));
+            if (retry == 3) cout << "您已失败三次，失败五次后将强制退出" << endl;
+            if (retry == 5)
+            {
+                cout << "您已失败五次，强制退出\n";
                 exit(-1);
             }
+            
         } while (!user::get_instance()->check_length(new_user.password));
 
         // 创建账号
@@ -214,9 +231,11 @@ std::string login::handle_register(HANDLE hConsole) {
             system("cls");
 
             // 创建用户相关表
-            user::get_instance()->create_history_table(new_user.name);
-            user::get_instance()->create_error_book(new_user.name);
-
+            if(user::get_instance()->create_history_table(new_user.name))   std::cout<<"创建历史记录表成功！\n";
+            if(user::get_instance()->create_error_book(new_user.name))  std::cout<<"创建错题本成功！\n";
+            if(user::get_instance()->create_own_wordlist(new_user.name)) std::cout<<"创建词库成功！\n";
+            
+            
             // 首次签到
             std::cout<<"欢迎你， "<<user::get_instance()->user_name<<std::endl;
             handle_checkin(new_user.name, hConsole);

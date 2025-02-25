@@ -32,7 +32,6 @@ bool CheckIn::check_in(std::string user_name) {
     return true;
 }
 
-
 int CheckIn::get_checkin_days(std::string user_name) {
     if (user_name.empty() || user_name.length() > 64) {
         std::cerr << "Invalid username" << std::endl;
@@ -76,7 +75,6 @@ int CheckIn::get_checkin_days(std::string user_name) {
     return (ret == 0) ? checkin_days :
         (ret == MYSQL_NO_DATA) ? 0 : -1;
 }
-
 
 std::string CheckIn::get_last_checkin_day(std::string user_name)
 {

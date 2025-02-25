@@ -19,14 +19,15 @@ int practice_main_menu::main_choose_menu()
 		std::cout << "2.错题本" << std::endl;
 		std::cout << "3.历史答题记录" << std::endl;
 		std::cout << "4.个性化单词本" << std::endl;
-		std::cout << "5.退出程序" << std::endl;
+		std::cout << "5.重练做题" << std::endl;
+		std::cout << "6.退出程序" << std::endl;
 		std::cout << "请输入你的选择：\n";
 		std::cin >> choice;
 		if (choice >= 1 && choice <= 5)
 		{
 			valid_choice = true;
 		}
-		else if (choice == 5)
+		else if (choice == 6)
 		{
 			std::cout << "退出程序" << std::endl;
 			exit(0);
@@ -288,8 +289,9 @@ int Wordlist::show(int pcur,std::string name,std::string zh,std::string pronunci
 				siliu.push_back(2);
 			}
 			}
-			if (a == 2)
+			if (a == 3)
 			{
+				
 				std::cout << "错误次数过多，进入下一题\n";
 				break;
 			}
@@ -368,116 +370,12 @@ void Wordlist::random_a(int choice)
 void Wordlist ::remind()
  {
 	SetConsoleOutputCP(936);    // 设置控制台为 GBK
-	std::cout << "你打错了，再来一遍" << std::endl;
+	std::cout << "你答错了，请再来一遍" << std::endl;
 		 printf("\a");
  }
 
-error_book::error_book()
-{
-	if (ID.size() == 0)
-	{
-		std::cout << "你已经没有错题了，请继续努力" << std::endl;
-	}
-	else {
-		for (int f = 0; f < ID.size(); f++)
-		{
-			if (*(siliu.begin()) == 1)
-			{
-				if (*(zhying.begin()) == 1)
-				{
-					std::string zh = words::get_instance()->get_zh_cet_4(*(ID.begin()));
-					std::string pronunciation = words::get_instance()->get_pronunciation_cet_4(*(ID.begin()));
-					std::string name = words::get_instance()->get_name_cet_4(*(ID.begin()));
-					std::cout << zh << std::endl;
-					int a = 0;
-					while (Wordlist::get()->error_a(name))
-					{
-						std::cout << "不答对无法退出" << std::endl;
-						std::cout << "提示:";
-						SetConsoleOutputCP(936);//重新启用gbk编码保证输出正确
-					}
-					ID.erase(ID.begin());
-					siliu.erase(siliu.begin());
-					zhying.erase(zhying.begin());
-				}
-			}//  CET4 中译英
-			if (*(siliu.begin()) == 1)
-			{
-				if (*(zhying.begin()) == 2)
-				{
-					std::string zh = words::get_instance()->get_zh_cet_4(*(ID.begin()));
-					std::string pronunciation = words::get_instance()->get_pronunciation_cet_4(*(ID.begin()));
-					std::string name = words::get_instance()->get_name_cet_4(*(ID.begin()));
-					std::cout << name << std::endl;
-					int a = 0;
-					while (Wordlist::get()->error_b(zh))
-					{
-						std::cout << "不答对无法退出" << std::endl;
-						std::cout << "提示:";
-						// 设置控制台输出为 UTF-8 编码
-						SetConsoleOutputCP(65001);
-						std::cout << pronunciation << std::endl;
-						SetConsoleOutputCP(936);//重新启用gbk编码保证输出正确
-					}
-					ID.erase(ID.begin());
-					siliu.erase(siliu.begin());
-					zhying.erase(zhying.begin());
-				}
-			}//CET4 英译中
-			if (*(siliu.begin()) == 2)
-			{
-				if (*(zhying.begin()) == 1)
-				{
-					std::string zh = words::get_instance()->get_zh_cet_6(*(ID.begin()));
-					std::string pronunciation = words::get_instance()->get_pronunciation_cet_6(*(ID.begin()));
-					std::string name = words::get_instance()->get_name_cet_6(*(ID.begin()));
-					std::cout << zh << std::endl;
-					int a = 0;
-					while (Wordlist::get()->error_a(name))
-					{
-						std::cout << "不答对无法退出" << std::endl;
-						std::cout << "提示:";
-						// 设置控制台输出为 UTF-8 编码
-						SetConsoleOutputCP(65001);
 
-						
-						std::cout << pronunciation << std::endl;
-						SetConsoleOutputCP(936);//重新启用gbk编码保证输出正确
-					}
-					ID.erase(ID.begin());
-					siliu.erase(siliu.begin());
-					zhying.erase(zhying.begin());
-				}
-			}//CET6 中译英
-			if (*(siliu.begin()) == 2)
-			{
-				if (*(zhying.begin()) == 2)
-				{
-					std::string zh = words::get_instance()->get_zh_cet_6(*(ID.begin()));
-					std::string pronunciation = words::get_instance()->get_pronunciation_cet_6(*(ID.begin()));
-					std::string name = words::get_instance()->get_name_cet_6(*(ID.begin()));
-					std::cout << name << std::endl;
-					int a = 0;
-					while (Wordlist::get()->error_b(zh))
-					{
-						std::cout << "不答对无法退出" << std::endl;
-						std::cout << "提示:";
-						// 设置控制台输出为 UTF-8 编码
-						SetConsoleOutputCP(65001);
 
-						// 启用宽字符支持
-						
-						std::cout << pronunciation << std::endl;
-						SetConsoleOutputCP(936);//重新启用gbk编码保证输出正确
-					}
-					ID.erase(ID.begin());
-					siliu.erase(siliu.begin());
-					zhying.erase(zhying.begin());
-				}
-			}
-		}
-	}
-}
 
 void error_book::show_error_book()
 {
