@@ -77,7 +77,7 @@ public:
         //cin >> response;
    // if (response == "y")
        // {
-        //    pwd = "a12bCd3_W45pUq6";
+        //   //////////////////////////
        // }
        
    // }
@@ -126,9 +126,8 @@ public:
         
         
         bool first_connect = true;
-        std::string host = "nas.njuptwujindian.com";
-        std::string pwd = "a12bCd3_W45pUq6";
-
+        ///////////////////////////
+//////////////////////////////
 
 private:
         void ensure_capacity(unsigned int count) {
