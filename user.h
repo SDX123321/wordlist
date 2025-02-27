@@ -8,8 +8,10 @@
 #include <mysqlx/xdevapi.h>
 #include <iostream>
 #include <string>
+#include <conio.h>
 #include <iterator>
 #include <regex>
+#include <stdio.h>
 #include <vector>
 #include <thread>
 #include "practice_menu.h"
@@ -59,11 +61,32 @@ public:
 	std::string user_name;
 
 public:
-	void get_name(std::string new_name);     //账号传参
+   // void get_host() {
+        //std::string new_host;
+        //cout << "请输入主机名，默认留空为localhost" << endl;
+        //cin>>new_host;
+        //if (new_host.empty())
+       // {
+       //     new_host = "localhost";
+       // }
+       // host = new_host;
+   // }
+    //void set_pwd(){
+       // cout << "是否要使用远端服务器密码？" << endl;
+       // string response;
+        //cin >> response;
+   // if (response == "y")
+       // {
+        //    pwd = "a12bCd3_W45pUq6";
+       // }
+       
+   // }
+    void get_name(std::string new_name);     //账号传参
 	bool insert_user(current &t); //新增用户
 	
-    bool refind_password();
+    bool refound_password(string account, bool restore);
     bool check_password(string account, string password); //检查密码
+    bool update_password(string account, string password);
     bool check_account(const std::string& account); //检查账号
     bool check_length(const std::string& account);   //检查账号或者密码长度
 
@@ -100,8 +123,14 @@ public:
         MYSQL_BIND* get_params() {
             return params;
         }
+        
+        
+        bool first_connect = true;
+        std::string host = "nas.njuptwujindian.com";
+        std::string pwd = "a12bCd3_W45pUq6";
 
-    private:
+
+private:
         void ensure_capacity(unsigned int count) {
             if (count > param_count) {
                 MYSQL_BIND* new_params = new MYSQL_BIND[count];
@@ -123,9 +152,7 @@ public:
         unsigned int param_count;
 private:
     MYSQL* con;
-    const char* host = "localhost";
     const char* use = "root";
-    const char* pw = "123456";
     const char* db_name = "wordlist";
     const int port = 3300;
 };

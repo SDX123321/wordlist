@@ -5,7 +5,7 @@ CheckIn::CheckIn()
 	con = mysql_init(NULL);
 	mysql_options(con, MYSQL_SET_CHARSET_NAME, "gbk");
 
-	if (!mysql_real_connect(con, host, use, pw, db_name, port, NULL, 0))
+	if (!mysql_real_connect(con, user::get_instance()->host.c_str(), use, user::get_instance()->pwd.c_str(), db_name, port, NULL, 0))
 	{
 		printf_s("Error connecting to database:%s\n", mysql_error(con));
 		exit(-1);
@@ -80,7 +80,7 @@ std::string CheckIn::get_last_checkin_day(std::string user_name)
 {
     std::string date;
     char sql[512];
-    snprintf(sql, sizeof(sql), "SELECT last_checkin_date FROM user WHERE name = '%s';", user_name.c_str());
+    sprintf(sql,  "SELECT last_checkin_date FROM user WHERE name = '%s';", user_name.c_str());
     if (mysql_query(con, sql)) {
         std::cerr << "Error: " << mysql_error(con) << std::endl;
         exit(-1);

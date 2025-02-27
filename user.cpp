@@ -1,5 +1,6 @@
 ﻿#include "user.h"
 
+
 constexpr auto CRT_SECURE_NO_WARNINGS = 1;
 
 using namespace std;
@@ -8,11 +9,17 @@ user::user()
 	con = mysql_init(NULL);
 	mysql_options(con, MYSQL_SET_CHARSET_NAME, "gbk");
 	
-	if (!mysql_real_connect(con, host, use, pw, db_name, port, NULL, 0))
+	if (!mysql_real_connect(con, host.c_str(), use, pwd.c_str(), db_name, port, NULL, 0))
 	{
 		printf("Error connecting to database:%s\n", mysql_error(con));
 		exit(-1);
 	}
+	if (first_connect) {
+		std::cout << "远程服务器连接成功！" << endl;
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
+	first_connect = false;
+
 }
 user::~user()
 {
@@ -71,6 +78,57 @@ int user::welcome_page() {
 		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
+}
+
+bool user::refound_password(string account, bool restore)
+{
+	string answer;
+	char ch;
+	if (!restore)
+	{
+
+		std::cout << "您是否要重置密码？\n1.是\t2.否\n";
+
+		
+		do {
+			std::cin >> answer;
+			if (answer != "1" && answer != "2") std::cout << "[输入校验]输入错误" << endl;
+		} while (answer != "1" && answer != "2");
+	}
+	
+    if (answer == "1" || restore) 
+	{
+		DWORD mode;
+		GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &mode);
+		SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode & (~ENABLE_ECHO_INPUT));
+		string password;
+		do {
+			std::cout << "请输入新密码：(4-20位)\n仅能包括大小写字母，数字及下划线)\n";
+			while ((ch = _getch()) != '\r') {
+				if (ch == '\b') {
+					if (!password.empty()) {
+						password.pop_back();
+						std::cout << "\b \b";
+					}
+				}
+				else if (ch >= 32 && ch <= 126) {
+					password.push_back(ch);
+					std::cout << '*';
+				}
+			}
+			std::cout << std::endl;
+			SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode);
+		} while (!check_length(password));
+		update_password(account, password);
+		if (!restore)std::cout << "密码重置成功！" << std::endl;
+		else std::cout << "密码更改成功！" << std::endl;
+		std::cout << "请按任意键继续" << endl;
+		getch();
+		return true;
+    }
+	if (answer == "2") return  false;
+
+
 }
 
 //   已优化为防止 sql 注入
@@ -134,6 +192,14 @@ bool user::check_password(string account, string password) {
 	mysql_stmt_free_result(stmt);
 	mysql_stmt_close(stmt);
 	return ret;
+}
+
+bool user::update_password(string account, string password)
+{
+	char sql[128];
+	sprintf_s(sql, "UPDATE user SET password = '%s' WHERE name = '%s';", password.c_str(), account.c_str());
+	if (mysql_query(con, sql))
+	return false;
 }
 
 bool user::check_account(const std::string& account) {
@@ -289,7 +355,7 @@ MYSQL_ROW row;
 while ((row = mysql_fetch_row(result))) {  
 	
 	SetConsoleTextAttribute(hConsole, 0x0003 | FOREGROUND_INTENSITY);  
-	std::cout << "\n错题 #" << count << "\n";  
+	std::cout << "\n错题 #" << count+1 << "\n";  
 	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);  
 
 	std::cout
@@ -317,6 +383,8 @@ SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND
 
 // 清理资源  
 mysql_free_result(result);  
+std::cout << "按任意键返回主菜单";
+getch();
 }
 
 bool user::get_error_book() {
@@ -326,7 +394,7 @@ bool user::get_error_book() {
 	result_get.clear();
 
 	// 设置字符集
-	mysql_set_character_set(con, "utf8mb4");
+	mysql_set_character_set(con, "gbk");
 
 	char sql[512];
 	sprintf_s(sql, "SELECT main_id, ID, name, zh, sources FROM %s_error_book;",
@@ -356,7 +424,7 @@ bool user::get_error_book() {
 			item.name = row[2] ? row[2] : "";
 			item.zh = row[3] ? row[3] : "";
 			item.sources = row[4] ? row[4] : "";
-
+			
 			// 记录字符串长度
 			item.name_length = item.name.length();
 			item.zh_length = item.zh.length();
@@ -383,31 +451,34 @@ bool user::get_error_book() {
 	SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
 	std::cout << "\n你有 " << count << " 条错题记录\n";
 	std::cout << "请输入你想重练的错题数量(输入0即视为退出练习):" << std::endl;
-
+	SetConsoleTextAttribute(hConsole, 0x0001|0x0002|0x0004);
 	std::string input;
-	std::getline(std::cin, input);
+	std::cin>> input;
 
-	try {
+	
 		int choice = std::stoi(input);
 		if (choice > 0 && choice <= count) {
 			// 保留用户选择数量的题目
 			result_get.resize(choice);
+			for (auto it = result_get.begin(); it != result_get.end(); ++it)
+			{
+				error_book::get_instance()->error_book_a(it->name, it->zh);
+			}
+			std::cout << "按任意键退出" << endl;
+            getch();
 			return true;
 		}
 		else if (choice == 0) {
 			result_get.clear();
 			return false;
 		}
-	}
-	catch (...) {
-		log_error("输入转换失败");
-	}
+	
 
 	SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
 	std::cout << "请输入有效的选项 (0-" << count << ")\n";
 	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 	std::this_thread::sleep_for(std::chrono::seconds(1));
-	return false;
+	
 }
 
 void user::show_history_table() {
@@ -524,6 +595,7 @@ void user::show_history_table() {
 			<< "词库: " << std::string(result_data.source, result_data.source_length) << "\n"
 			<< "模式: " << std::string(result_data.mode, result_data.mode_length) << "\n"
 			<< "用时: " << result_data.last << " 秒\n";
+		std::this_thread::sleep_for(std::chrono::milliseconds(600));
 	}
 
 	if (count == 0) {
@@ -540,38 +612,79 @@ void user::show_history_table() {
 	// 清理资源
 	mysql_stmt_free_result(stmt);
 	mysql_stmt_close(stmt);
+    std::cout << "按任意键继续..." << std::endl;
+    _getch();
 }
 
-void user::show_own_wordlist()
-{
-	while (true)
-	{
-		string choice;
-		cout<<"1.查看整个单词本\n2.添加单词\n3.删除单词\n4.查询指定单词\n5.返回上一级\n";
-		cin >> choice;
-		do {
-			cout << "输入有误请重新输入！" << endl;
-			cin >> choice;
-		} while (choice != "1" && choice != "2" && choice != "3" && choice != "4");
-		switch (atoi(choice.c_str()))
-		{
-            case 1:
-				if(showall()) cout<<"显示成功！"<<endl;
-				std::this_thread::sleep_for(std::chrono::seconds(10));
-				break;
-			case 2:
-                if(addw()) cout<<"添加成功！"<<endl;
-				break;
-			case 3:
-                if(deletew()) cout<<"删除成功！"<<endl;
-			case 4:
-                if(searchw()) cout<<"查询成功！"<<endl;
-				break;
-			case 5:
+void user::show_own_wordlist() {
+	while (true) {
+		system("cls");  // 清屏
+		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+		// 显示菜单
+		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+		std::cout << "\n==== 个人单词本 ====\n";
+		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+		std::cout << "1. 查看整个单词本\n"
+			<< "2. 添加单词\n"
+			<< "3. 删除单词\n"
+			<< "4. 查询指定单词\n"
+			<< "5. 返回上一级\n"
+			<< "请输入你的选择 (1-5): ";
+
+		std::string choice;
+		std::getline(std::cin, choice);  // 使用getline避免输入缓冲问题
+
+		if (choice.length() == 1 && choice[0] >= '1' && choice[0] <= '5') {
+			switch (choice[0] - '0') {
+			case 1:
+				if (showall()) {
+					std::cout << "显示成功！" << std::endl;
+					std::this_thread::sleep_for(std::chrono::seconds(2));
+					std::cout << "按任意键继续..." << std::endl;
+					_getch();
+				}
 				break;
 
+			case 2:
+				if (addw()) {
+					SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+					std::cout << "添加成功！" << std::endl;
+					SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+					std::this_thread::sleep_for(std::chrono::seconds(1));
+					std::cout << "按任意键继续..." << std::endl;
+					_getch();
+				}
+				break;
+
+			case 3:
+				if (deletew()) {
+					SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+					std::cout << "删除成功！" << std::endl;
+					SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+					std::this_thread::sleep_for(std::chrono::seconds(1));
+					std::cout << "按任意键继续..." << std::endl;
+					_getch();
+				}
+				break;
+
+			case 4:
+				if (searchw()) {
+					std::cout << "按任意键继续..." << std::endl;
+					_getch();
+				}
+				break;
+
+			case 5:
+				return;
+			}
 		}
-		if (choice == "5") break;
+		else {
+			SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
+			std::cout << "无效的选择，请重新输入！" << std::endl;
+			SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+		}
 	}
 }
 
@@ -580,7 +693,7 @@ bool user::errorpp(vector <string> wrong_list)
 	for (auto it = wrong_list.begin(); it != wrong_list.end(); it++) 
 	{
 		char sql[128];
-		sprintf_s(sql, 128, "UPDATE %s_error_book SET error_times = error_times + 1 WHERE name = %s;", user_name.c_str(), it->c_str());
+		sprintf_s(sql, 128, "UPDATE %s_error_book SET error_times = error_times + 1 WHERE name = '%s';", user_name.c_str(), it->c_str());
 		if (mysql_query(con, sql)) {
             log_error("更新错误记录失败: " + std::string(mysql_error(con)));
 			return false;
@@ -595,7 +708,7 @@ bool user::errorcc(vector<string> right_list)
 	for (auto it = right_list.begin(); it != right_list.end(); it++)
 	{
 		char sql[128];
-		sprintf_s(sql, 128, "DELETE FROM %s_error_book WHERE name = %s;", user_name.c_str(), it->c_str());
+		sprintf_s(sql, 128, "DELETE FROM %s_error_book WHERE name = '%s';", user_name.c_str(), it->c_str());
 		if (mysql_query(con, sql)) {
 			log_error("删除本次正确记录失败: " + std::string(mysql_error(con)));
 			return false;
@@ -606,13 +719,14 @@ bool user::errorcc(vector<string> right_list)
 
 bool user::addw()
 {
+	mysql_set_character_set(con, "gbk");
 	string name, zh;
 	std::cout<< "请输入单词名：";
 	std::cin >> name;
 	std::cout << "请输入单词释义：";
 	std::cin >> zh;
 	char sql[128];
-	sprintf_s(sql, 128, "INSERT INTO %s_own_wordlist (name, zh) VALUES(%s, %s);",name.c_str(),zh.c_str());
+	sprintf_s(sql, 128, "INSERT INTO %s_own_wordlist (name, zh) VALUES('%s', '%s');",user_name.c_str(),name.c_str(),zh.c_str());
     if (mysql_query(con, sql)) {
         log_error("添加单词失败: " + std::string(mysql_error(con)));
         return false;
@@ -627,7 +741,7 @@ bool user::deletew()
 	std::cin >> name;
 	
 	char sql[128];
-	sprintf_s(sql, 128, "DELETE FROM %s_own_wordlist  WHERE name = %s;", name.c_str());
+	sprintf_s(sql, 128, "DELETE FROM %s_own_wordlist  WHERE name = '%s';", user_name.c_str(),name.c_str());
 	if (mysql_query(con, sql))
 	{
 		log_error("删除单词失败: " + std::string(mysql_error(con)));
@@ -643,7 +757,7 @@ bool user::searchw()
 	std::cin >> name;
 
 	char sql[128];
-	sprintf_s(sql, 128, "SELECT name,zh FROM %s_own_wordlist  WHERE name = %s;", name.c_str());
+	sprintf_s(sql, 128, "SELECT name,zh FROM %s_own_wordlist  WHERE name = '%s';", user_name.c_str(), name.c_str());
 	if (mysql_query(con, sql))
 	{
         log_error("查询单词失败: " + std::string(mysql_error(con)));
@@ -652,8 +766,12 @@ bool user::searchw()
 	MYSQL_ROW row;
 	if (row = mysql_fetch_row(result))
 	{
-        std::cout << "单词名：" << row[0] << "\n"
-            << "释义：" << row[1] << "\n";
+		std::cout << "单词名：" << row[0] << "\n"
+			<< "释义：" << row[1] << "\n";
+	}
+	else if (result == NULL)
+	{
+		std::cout << "单词不存在！" << std::endl;
 	}
 
 
@@ -686,9 +804,6 @@ bool user::showall()
 }
 
 
-
-
-
 bool user::record_info(std::vector<int> ID_list, std::string sources, std::string mode)
 	{
 		if (user_name.empty() || sources.empty() || mode.empty() || ID_list.empty()) {
@@ -697,7 +812,7 @@ bool user::record_info(std::vector<int> ID_list, std::string sources, std::strin
 		}
 
 		// 设置连接字符集为 utf8mb4
-		if (mysql_set_character_set(con, "utf8mb4")) {
+		if (mysql_set_character_set(con, "gbk")) {
 			log_error("设置字符集失败: " + std::string(mysql_error(con)));
 			return false;
 		}

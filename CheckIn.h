@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 #include <stdio.h>
+#include "user.h"
 
 class CheckIn
 {
@@ -25,9 +26,9 @@ public:
 private:
 
 	MYSQL* con;
-	const char* host = "localhost";
+	
 	const char* use = "root";
-	const char* pw = "123456";
+	
 	const char* db_name = "wordlist";
 	const int port = 3300;
 };

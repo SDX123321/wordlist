@@ -1,7 +1,7 @@
 #pragma comment( lib,"winmm.lib" )
 #include "login.h"
 #include "practice_menu.h"
-#include "essyX.h"
+
 
 
 int main()
@@ -14,6 +14,7 @@ int main()
 //user::get_instance()->get_error_book();
 	while (true)
 	{
+		
 		switch (practice_main_menu::get_instance()->main_choose_menu())
 		{
 		case 1:A.Wordlist_a();
@@ -23,7 +24,17 @@ int main()
 		case 3:user::get_instance()->show_history_table();
 			break;
 		case 4:
-		case 5: exit(0);
+            user::get_instance()->show_own_wordlist();
+			break;
+		case 5: 
+			user::get_instance()->get_error_book();
+
+			break;
+		case 6:
+			user::get_instance()->refound_password(user::get_instance()->user_name,true);
+			break;
+		case 7:
+			exit(0);
 		}
 		
 	}

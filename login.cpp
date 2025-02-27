@@ -68,7 +68,12 @@ std::string login::handle_login(HANDLE hConsole) {
             cout << "[输入校验]账号不存在\n";
             retry++;
         }
-        if (retry == 3) cout << "您已失败三次，失败五次后将强制退出" << endl;
+        if (retry == 3)
+        {
+            cout << "您已失败三次，失败五次后将强制退出" << endl;
+            
+            
+        }
         if (retry == 5)
         {
             cout << "您已失败五次，强制退出\n";
@@ -107,7 +112,26 @@ std::string login::handle_login(HANDLE hConsole) {
             cout << "[输入校验]密码错误\n";
             retry++;
         }
-        if (retry == 3) cout << "您已失败三次，失败五次后将强制退出" << endl;
+        if (retry == 3)
+        {
+            cout << "您已失败三次，失败五次后将强制退出" << endl;
+            if (user::get_instance()->refound_password(account, false))
+            {
+                SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+                std::cout << "登录成功！欢迎回来，" << account << "\n";
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(800));
+
+                user::get_instance()->user_name = account;
+                system("cls");
+                std::cout << "欢迎你， " << user::get_instance()->user_name << std::endl;
+                // 签到系统
+                handle_checkin(account, hConsole);
+
+                return account;
+            }
+        }
         if (retry == 5)
         {
             cout << "您已失败五次，强制退出\n";
@@ -141,10 +165,12 @@ std::string login::handle_register(HANDLE hConsole) {
         // 注册账号
         do {
             
+            if (retry != 0)
+            {
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
                 std::cout << "请重新输入\n";
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            
+            }
 
             std::cout << "请输入账号 (4-20位字母、数字或下划线): ";
             std::cin >> new_user.name;
@@ -153,24 +179,34 @@ std::string login::handle_register(HANDLE hConsole) {
             if (!user::get_instance()->check_length(new_user.name)) {
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
                 std::cout << "[输入校验]账号格式不正确\n";
-                continue;
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                retry++;
+                
             }
 
             if (user::get_instance()->check_account(new_user.name)) {
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
                 std::cout << "[输入校验]账号已存在\n";
-                continue;
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                retry++;
+                
             }
-            if (user::get_instance()->check_account(new_user.name) ||!user::get_instance()->check_length(new_user.name)) retry++;
+            
 
-            if (retry == 3) cout << "您已失败三次，失败五次后将强制退出" << endl;
+            if (retry == 3)
+            {
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
+                cout << "您已失败三次，失败五次后将强制退出" << endl;
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            }
             if (retry == 5)
             {
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
                 cout << "您已失败五次，强制退出\n";
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
                 exit(-1);
             }
-        } while (user::get_instance()->check_account(new_user.name) ||
-            !user::get_instance()->check_length(new_user.name));
+        } while (user::get_instance()->check_account(new_user.name) ||!user::get_instance()->check_length(new_user.name));
 
         // 注册密码
         retry = 0;
@@ -212,7 +248,11 @@ std::string login::handle_register(HANDLE hConsole) {
                 retry++;
                 continue;
             }
-            if (retry == 3) cout << "您已失败三次，失败五次后将强制退出" << endl;
+            if (retry == 3)
+            { 
+                cout << "您已失败三次，失败五次后将强制退出" << endl;
+                
+            }
             if (retry == 5)
             {
                 cout << "您已失败五次，强制退出\n";

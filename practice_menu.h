@@ -1,5 +1,5 @@
 #pragma once
-#define DEF 10
+#define DEF 11
 #include <mysql.h>
 
 #include<iostream>
@@ -7,6 +7,7 @@
 #include<cstdlib>
 #include <windows.h>
 #include<ctime>
+#include <random>
 #include<stdio.h>
 #include<vector>
 #include<algorithm>
@@ -53,7 +54,7 @@ public:
 
 private:
 	MYSQL* con2;
-	const char* host2 = "localhost";
+	
 	const char* user2 = "root";
 	const char* pw2 = "123456";
 	const char* db_name2 = "wordlist";
@@ -123,8 +124,9 @@ public:
 class error_book
 {
 public:
-	error_book();
 	void show_error_book();
+	void error_book_a(std::string name, std::string zh);
+	int random_b();
 	static error_book* get_instance() {
 		static error_book n;
         return &n;

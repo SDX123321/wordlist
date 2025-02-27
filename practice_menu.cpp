@@ -9,25 +9,41 @@ std::vector <int> siliu;
 std::vector <int> zhying;
 std::vector <int> qu;
 std::vector <int> ag;
+
+std::vector<string> mistake;
+std::vector<string> correct;
+
 int Wordlist::e = 0;
+
+
+
 int practice_main_menu::main_choose_menu()
 {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	// 显示菜单
+	
 	bool valid_choice = false;
 	int choice;
 	do {
+		system("cls");
+		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+		std::cout << "\n==== 用户主界面 ====\n";
+		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		std::cout << "1.开始答题" << std::endl;
 		std::cout << "2.错题本" << std::endl;
 		std::cout << "3.历史答题记录" << std::endl;
 		std::cout << "4.个性化单词本" << std::endl;
-		std::cout << "5.重练做题" << std::endl;
-		std::cout << "6.退出程序" << std::endl;
+		std::cout << "5.重练错题" << std::endl;
+		std::cout << "6.修改密码" << std::endl;
+		std::cout << "7.退出程序" << std::endl;
 		std::cout << "请输入你的选择：\n";
 		std::cin >> choice;
-		if (choice >= 1 && choice <= 5)
+		if (choice >= 1 && choice <= 6)
 		{
 			valid_choice = true;
 		}
-		else if (choice == 6)
+		else if (choice == 7)
 		{
 			std::cout << "退出程序" << std::endl;
 			exit(0);
@@ -38,15 +54,21 @@ int practice_main_menu::main_choose_menu()
 		}
 
 	}while (!valid_choice);
+	system("cls");
 	return choice;
 }
+
 int practice_sub_menu::practice_choose_menu() {
 	int sub_choice;
 	bool valid_input = false;
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	do 
 	{
-		std::cout << "请选择词汇类型" << std::endl;
+		system("cls");
+		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+		std::cout << "\n==== 请选择词汇来源 ====\n";
+		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		std::cout << "1.CET4" << std::endl;
 		std::cout << "2.CET6" << std::endl;
 		std::cout << "敬请期待" << std::endl;
@@ -57,22 +79,30 @@ int practice_sub_menu::practice_choose_menu() {
 			}
 			else {
 				std::cout << "请重新输入有效选项（1或2）" << std::endl;
+				std::this_thread::sleep_for(std::chrono::seconds(1));
 			}
 		}
 		else { // 非整数输入处理
 			std::cin.clear(); // 清除错误状态
 			std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n'); // 清空缓冲区
 			std::cout << "输入无效，请输入数字1或2。" << std::endl;
+			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
 	} while (!valid_input);
-
+	system("cls");
 	return sub_choice;
 }
+
 int practice_sub_menu::practice_choose_menu_b()
 {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	bool valid_input = false;
 	int sub_choice = 0;
 	do {
+		system("cls");
+		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+		std::cout << "\n==== 请选择题目类型 ====\n";
+		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		std::cout << "1.给中文写英文" << std::endl;
 		std::cout << "2.给英文写中文" << std::endl;
 		
@@ -85,16 +115,23 @@ int practice_sub_menu::practice_choose_menu_b()
 			else 
 			{
 				std::cout << "请重新输入有效选项（1或2）" << std::endl;
+				std::this_thread::sleep_for(std::chrono::seconds(1));
 			}
 		}
 		else { // 非整数输入处理
 			std::cin.clear(); // 清除错误状态
 			std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n'); // 清空缓冲区
 			std::cout << "输入无效，请输入数字1或2。" << std::endl;
+			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
 	}while (!valid_input);
+	system("cls");
 	return sub_choice;
 }
+
+
+
+
 void Wordlist::Wordlist_a()
 {
 	int score = 100;
@@ -112,8 +149,9 @@ void Wordlist::Wordlist_a()
 				{
 					std::cout << "欢迎进入中译英模式\n";
 					start = timeGetTime();         //begin timer
-					for (int aa = 0; aa < DEF; aa++)
+					for (int aa = 1; aa < DEF; aa++)
 					{
+						std::cout << "第" << aa << "题" << std::endl;
 						std::string zh = B.get_zh_cet_4(qu[e]);
 						std::string pronunciation = B.get_pronunciation_cet_4(qu[e]);
 						std::string name = B.get_name_cet_4(qu[e]);
@@ -144,8 +182,9 @@ void Wordlist::Wordlist_a()
 				{
 					start = timeGetTime();
 					std::cout << "欢迎进入英译中模式\n";
-					for (int aa = 0; aa < DEF; aa++)
+					for (int aa = 1; aa < DEF; aa++)
 					{
+						std::cout << "第" << aa << "题" << std::endl;
 						std::string zh = B.get_zh_cet_4(qu[e]);
 						std::string pronunciation = B.get_pronunciation_cet_4(qu[e]);
 						std::string name = B.get_name_cet_4(qu[e]);
@@ -179,8 +218,9 @@ void Wordlist::Wordlist_a()
 				{
 					start = timeGetTime();
 					std::cout << "欢迎进入中译英模式\n";
-					for (int aa = 0; aa < DEF; aa++)
+					for (int aa = 1; aa < DEF; aa++)
 					{
+						std::cout << "第" << aa << "题" << std::endl;
 						std::string zh = B.get_zh_cet_6(qu[e]);
 						std::string pronunciation = B.get_pronunciation_cet_6(qu[e]);
 						std::string name = B.get_name_cet_6(qu[e]);
@@ -208,8 +248,9 @@ void Wordlist::Wordlist_a()
 				{
 					start = timeGetTime();
 					std::cout << "欢迎进入英译中模式\n";
-					for (int aa = 0; aa < DEF; aa++)
+					for (int aa = 1; aa < DEF; aa++)
 					{
+						std::cout << "第" << aa << "题" << std::endl;
 						std::string zh = B.get_zh_cet_6(qu[e]);
 						std::string pronunciation = B.get_pronunciation_cet_6(qu[e]);
 						std::string name = B.get_name_cet_6(qu[e]);
@@ -238,6 +279,7 @@ void Wordlist::Wordlist_a()
 			std::cout << "你的分数是:\t" << score << std::endl;
 			std::this_thread::sleep_for(std::chrono::seconds(3));//等待三秒展示分数
 }
+
 int Wordlist::error_a(std::string correct)
  {
 	SetConsoleOutputCP(936);    // 设置控制台为 GBK 
@@ -251,25 +293,14 @@ int Wordlist::error_a(std::string correct)
 	 remind();
 	 return 1;
  }
-int Wordlist::error_b(std::string correct)
- {
-	SetConsoleOutputCP(936);    // 设置控制台为 GBK 
-	std::string n;
-	 std::cout << "请输入中文" << std::endl;
-	 std::cin >> n;
-	 if (n == correct)
-	 {
-		 return 0;
-	 }
-	 remind();
-	 return 1;
- }
+
+
 int Wordlist::show(int pcur,std::string name,std::string zh,std::string pronunciation,int ID_a,int second)
 {
 	int score = 0;
 	if (second == 1)//中译英，输入英文
 	{
-		SetConsoleOutputCP(65001);  // 设置控制台为 UTF-8
+		SetConsoleOutputCP(936);  // 设置控制台为 GBK
 		std::cout << zh << std::endl;
 		int a = 0;
 		while (error_a(name))
@@ -295,10 +326,11 @@ int Wordlist::show(int pcur,std::string name,std::string zh,std::string pronunci
 				std::cout << "错误次数过多，进入下一题\n";
 				break;
 			}
-			SetConsoleOutputCP(936);    // 设置控制台为 GBK
+			
 			std::cout << "提示:";
 			SetConsoleOutputCP(65001);  // 设置控制台为 UTF-8
 			std::cout << pronunciation << std::endl;
+			SetConsoleOutputCP(936);    // 设置控制台为 GBK
 			
 		}
 	}
@@ -309,21 +341,23 @@ int Wordlist::show(int pcur,std::string name,std::string zh,std::string pronunci
 		int a = 0;
 		while (error_b(zh))
 		{
-			drop(score);
-			zhying.push_back(2);
-			ID.push_back(ID_a);
-			a++;
-			if (pcur == 1)
-			{
-				siliu.push_back(1);
+			if (a == 1) {
+				drop(score);
+				zhying.push_back(2);
+				ID.push_back(ID_a);
+				if (pcur == 1)
+				{
+					siliu.push_back(1);
+				}
+				else
+				{
+					siliu.push_back(2);
+				}
 			}
-			else
+            a++;
+			if (a == 3)
 			{
-				siliu.push_back(2);
-			}
-			if (a == 2)
-			{
-				std::cout << "错误次数过多，进入下一题";
+				std::cout << "错误次数过多，进入下一题\n";
 				break;
 			}
 			std::cout << "提示:";
@@ -334,10 +368,12 @@ int Wordlist::show(int pcur,std::string name,std::string zh,std::string pronunci
 	}
 	return score;
 }
+
 void  Wordlist::drop(int& score)
  {
-	score = score - 10;
+	score -=10;
  }
+
 void Wordlist::random_a(int choice)
 {
 	std::vector <int> s1;
@@ -348,7 +384,7 @@ void Wordlist::random_a(int choice)
 			s1.push_back(g);
 		}
 		srand(time(0));
-		random_shuffle(s1.begin(), s1.end());
+		shuffle(s1.begin(), s1.end(), std::mt19937{ std::random_device{}() });
 		for (int d = 0; d <= 9; d++)
 		{
 			qu.push_back(s1.at(d));
@@ -360,13 +396,14 @@ void Wordlist::random_a(int choice)
 			s1.push_back(g);
 		}
 		srand(time(0));
-		random_shuffle(s1.begin(), s1.end());
+		shuffle(s1.begin(), s1.end(), std::mt19937{ std::random_device{}() });
 		for (int d = 0; d <= 9; d++)
 		{
 			qu.push_back(s1.at(d));
 		}
 	}
 }
+
 void Wordlist ::remind()
  {
 	SetConsoleOutputCP(936);    // 设置控制台为 GBK
@@ -376,19 +413,10 @@ void Wordlist ::remind()
 
 
 
-
 void error_book::show_error_book()
 {
 	return user::get_instance()->show_error_book();
 }
-
-
-
-
-
-
-
-
 
 
 words::words()
@@ -396,7 +424,7 @@ words::words()
 	words::con2 = mysql_init(NULL);
 	mysql_options(con2, MYSQL_SET_CHARSET_NAME, "gbk");
 
-	if (!mysql_real_connect(con2, host2, user2, pw2, db_name2, port2, NULL, 0))
+	if (!mysql_real_connect(con2, user::get_instance()->host.c_str(), user2, user::get_instance()->pwd.c_str(), db_name2, port2, NULL, 0))
 	{
 		printf("Error connecting to database:%s\n", mysql_error(con2));
 		exit(-1);
@@ -440,65 +468,13 @@ std::string words::get_pronunciation_cet_6(int ID)
 	return get_word(ID, "pronunciation", "cet_6");
 }
 
-//If I check the unique word's name, there's no need to double check other objects
-void add_word()
-{
-	struct word new_word; std::string dest;
-	std::cout << "Please enter the destination you want to insert in:(eg: cet_4 or cet_6)\n";
-	std::cin >> dest; //todo:lack double_check
-	std::cout << "Please enter the word you want to add.\n";
-	words* instance = words::get_instance();
-	do {
-		std::cin >> new_word.name;
-		if (!instance->check_word(new_word.name))
-			std::cout << "The word you type already exists!" << std::endl;
-	} while (!instance->check_word(new_word.name));
-	std::cout << "Please input the word's Chinese meaning:";
-	std::cin >> new_word.zh;
-	std::cout << "Please input the word's pronunciation:";
-	std::cin >> new_word.pronunciation;
-	char sql[1024];
-	sprintf_s(sql, "insert into '%s'(name,zh,pronunciation) values('%s','%s','%s')",
-		dest.c_str(), new_word.name.c_str(), new_word.zh.c_str(), new_word.pronunciation.c_str());
-	if (mysql_query(instance->words::con2, sql)) //static object, use static ptr
-	{
-		std::cout << "Success!";
-
-	}
-	else std::cout << "Failed to insert the word, due to error:" << mysql_error(instance->con2) << std::endl;
-}
-
-//Delete the word according to its unique name
-
-void delete_word()
-{
-	std::string dest, word_to_delete;
-	words* instance = words::get_instance();
-	std::cout << "Please enter the destination you want to delete in:(eg: cet_4 or cet_6)\n";
-	std::cin >> dest;
-	std::cout << "Please enter the word you want to delete.\n";
-	do {
-		std::cin >> word_to_delete;
-		if (instance->check_word(word_to_delete))
-			std::cout << "The word you type don't exist!" << std::endl;
-	} while (instance->check_word(word_to_delete));
-	char sql[1024];
-	sprintf_s(sql, "DELETE FROM '%s' WHERE name = '%s'", dest.c_str(), word_to_delete.c_str());
-	if (mysql_query(instance->words::con2, sql))
-	{
-		std::cout << "Success!";
-	}
-	else std::cout << "Failed to delete the word, due to error:" << mysql_error(instance->con2) << std::endl;
-
-}
-
 //private functions:
 
 std::string words::get_word(int ID, std::string select, std::string sources)
 {
 	std::string word;
 	char sql[1024];
-	if (select == "pronunciation" || select == "zh") {
+	if (select == "pronunciation") {
 		
 		mysql_set_character_set(con2, "utf8mb4");
 	}
@@ -529,11 +505,103 @@ bool words::check_word(std::string word)
 
 	if (mysql_query(con2, sql))
 	{
-		fprintf_s(stderr, "Failed to check password.:Error%s\n", mysql_error(con2));
+		fprintf_s(stderr, "Failed to check word.:Error%s\n", mysql_error(con2));
 		return false;
 	}
 	MYSQL_RES* result = mysql_store_result(con2);
 	MYSQL_ROW row;
 	if (row = mysql_fetch_row(result)) return false;
 	return true;
+}
+
+void error_book::error_book_a(std::string name, string zh)
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	int ff = 1;
+	int f = 0;
+	static int b = 1;
+	int a = error_book::get_instance()->random_b();
+	if (a == 1)
+	{
+		
+		SetConsoleTextAttribute(hConsole, 0x0003);
+		std::cout << "第" << b << "题" << std::endl;
+		SetConsoleTextAttribute(hConsole, 0x0001|0x0002|0x0004);
+		b++;
+		std::cout << "中文：" << zh << std::endl;
+		while (Wordlist::get()->error_a(name))
+		{
+			ff++;
+			f = 1;
+			mistake.push_back(name);//将错误的单词加入到mistake中
+			if (ff == 3)
+			{
+                std::cout << "错误次数过多，自动进入下一题\n";
+			}
+			SetConsoleOutputCP(936);//重新启用gbk编码保证输出正确
+		}
+		if (f == 0) {
+			correct.push_back(name);//将正确的单词加入到correct中
+		}
+	}
+	else
+	{
+		SetConsoleTextAttribute(hConsole, 0x0003);
+		std::cout << "第" << b << "题" << std::endl;
+		SetConsoleTextAttribute(hConsole, 0x0001 | 0x0002 | 0x0004);
+		b++;
+		std::cout << name << std::endl;
+		while (Wordlist::get()->error_b(zh))
+		{
+			mistake.push_back(name);//将错误的单词加入到mistake中
+			std::cout << "不答对无法退出" << std::endl;
+			SetConsoleOutputCP(936);//重新启用gbk编码保证输出正确
+		}
+		if (f == 0) {
+			correct.push_back(name);//将正确的单词加入到correct中
+		}
+	}
+}
+
+int error_book::random_b()
+{
+	int a = 0;
+	srand(time(0));
+	a = (rand() % 2) + 1;
+	return a;
+}
+
+int Wordlist::error_b(std::string zh)
+{
+	SetConsoleOutputCP(936);    // 设置控制台为 GBK 
+	std::vector<wchar_t> zh_vector(zh.begin(), zh.end());
+	zh_vector.push_back(',');
+	std::vector<wchar_t> correct;
+	std::cout << "请输入中文" << std::endl;
+	std::string shuru;
+	std::cin >> shuru;
+	std::vector <wchar_t> shuru_vector(shuru.begin(), shuru.end());
+	for (auto it = std::find(zh_vector.begin(), zh_vector.end(), '.') + 2; it != zh_vector.end(); it++)
+	{
+		if ((*it == 65443 && *(it + 1) == 65452) || (*(it - 1) == 65443 && *it == 65452) || *it == 44 || (*it == 65443 && *(it + 1) == 65467) || (*(it - 1) == 65443 && *it == 65467))
+		{
+			if (shuru_vector == correct)
+			{
+				
+				std::cout << "correct" << std::endl;
+				return 0;
+			}
+			else
+			{
+				correct.clear();
+			}
+		}
+		else
+		{
+			correct.push_back(*it);
+		}
+
+	}
+	remind();
+	return 1;
 }
